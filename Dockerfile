@@ -1,0 +1,19 @@
+FROM eclipse-temurin:17-jdk AS build
+WORKDIR /app
+
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
+RUN ./mvnw -q -DskipTests dependency:go-offline
+
+COPY src src
+RUN ./mvnw -q -DskipTests clean package
+
+FROM eclipse-temurin:17-jdk
+WORKDIR /app
+
+COPY --from=build /app/target/user-service-0.0.1-SNAPSHOT.jar app.jar
+
+EXPOSE 8083
+
+ENTRYPOINT ["java","-jar","/app/app.jar"]
