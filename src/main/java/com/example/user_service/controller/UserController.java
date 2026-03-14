@@ -6,11 +6,12 @@ import com.example.user_service.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.security.core.Authentication;
+
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/use" +
-        "rs")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -19,6 +20,11 @@ public class UserController {
     @PostMapping
     public UserResponseDto createUser(@RequestBody UserRequestDto request) {
         return userService.createUser(request);
+    }
+
+    @GetMapping("/me")
+    public UserResponseDto getCurrentUser(Authentication authentication) {
+        return userService.getByEmail(authentication.getName());
     }
 
     @GetMapping("/{id}")

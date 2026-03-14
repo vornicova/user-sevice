@@ -23,6 +23,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto createUser(UserRequestDto request) {
+        if (request.getEmail() == null || request.getEmail().isBlank()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("User with email already exists: " + request.getEmail());
         }
@@ -46,6 +50,7 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found: " + id));
+
         return toDto(user);
     }
 
@@ -63,6 +68,17 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found: " + id));
 
+        if (request.getEmail() != null
+                && !request.getEmail().isBlank()
+                && !request.getEmail().equals(user.getEmail())
+                && userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("User with email already exists: " + request.getEmail());
+        }
+
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            user.setEmail(request.getEmail());
+        }
+
         user.setFullName(request.getFullName());
         user.setPhone(request.getPhone());
         user.setUpdatedAt(LocalDateTime.now());
@@ -73,7 +89,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("User not found: " + id);
+        }
+
         userRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponseDto getByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found: " + email));
+
+        return toDto(user);
     }
 
     private UserResponseDto toDto(User user) {
