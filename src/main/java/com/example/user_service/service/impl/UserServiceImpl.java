@@ -34,8 +34,9 @@ public class UserServiceImpl implements UserService {
         LocalDateTime now = LocalDateTime.now();
 
         User user = User.builder()
+                .id(request.getAuthUserId())
                 .email(request.getEmail())
-                .fullName(request.getFullName())
+                .fullName(request.getEmail())
                 .phone(request.getPhone())
                 .createdAt(now)
                 .updatedAt(now)
